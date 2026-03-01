@@ -13,10 +13,13 @@ public class SimpleBuilder {
         return new File(sourceFile).exists();
     }
 
-    private static String getAppDir() {
-        return ProcessHandle.current().info().command()
-            .map(cmd -> new File(cmd).getParent())
-            .orElse(".");
+    private static String getJarPath() {
+        try {
+            return new File(SimpleBuilder.class.getProtectionDomain()
+                .getCodeSource().getLocation().toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            return "app/launch.jar";
+        }
     }
 
     private static String[] buildCmd(String sourceFile, String className, String... args) {
@@ -26,8 +29,8 @@ public class SimpleBuilder {
             cmd.add(sourceFile);                                      // Dev: java launch/App.java
         } else {
             cmd.add("-cp");
-            cmd.add(getAppDir() + "/app/launch.jar");
-            cmd.add(className);                                       // Prod: java -cp app/launch.jar launch.App
+            cmd.add(getJarPath());
+            cmd.add(className);                                       // Prod: java -cp /abs/path/launch.jar launch.App
         }
         cmd.addAll(Arrays.asList(args));
         return cmd.toArray(new String[0]);
@@ -39,8 +42,11 @@ public class SimpleBuilder {
     }
 
     // Non-blocking new window — dùng cho Staging.java
-    public static void runInNewWindow(String sourceFile, String className, String... args) throws Exception {
-        List<String> cmd = new ArrayList<>(Arrays.asList("cmd", "/c", "start", "cmd", "/c"));
+    public static void runInNewWindow(String sourceFile, String className, boolean isKeepConsole, String... args) throws Exception {
+
+        String keepType = (isKeepConsole) ? "/k" : "/c";
+
+        List<String> cmd = new ArrayList<>(Arrays.asList("cmd", "/c", "start", "cmd", keepType));
         cmd.addAll(Arrays.asList(buildCmd(sourceFile, className, args)));
         SimpleProcess.run(cmd.toArray(new String[0]));
     }

@@ -48,7 +48,7 @@ public class Config {
     public static int getInt(String key, int defaultValue) {
 
         String val = load().getProperty(key);
-        
+
         if (val == null) return defaultValue;
 
         try {
@@ -58,9 +58,19 @@ public class Config {
         } catch (NumberFormatException e) {
 
             System.out.println("[ERROR] Invalid int for key '" + key + "': " + val + ", using default " + defaultValue);
-            
+
             return defaultValue;
-            
+
         }
+    }
+
+    public static boolean getBoolean(String key, boolean defaultValue) {
+
+        String val = load().getProperty(key);
+
+        if (val == null) return defaultValue;
+
+        return Boolean.parseBoolean(val.trim());
+
     }
 }

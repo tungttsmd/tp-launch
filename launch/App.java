@@ -70,8 +70,9 @@ public class App {
 
     public static void stagingDownload(String repo) throws Exception {
 
-        // cmd /k for debug Staging.java
-        SimpleBuilder.runInNewWindow("launch/app/update/Staging.java", "launch.app.update.Staging", repo);
+        boolean keepConsole = Config.getBoolean("staging.console.debug", false); // cmd /k for debug Staging.java
+
+        SimpleBuilder.runInNewWindow("launch/app/update/Staging.java", "launch.app.update.Staging", keepConsole, repo);
 
         System.exit(99);
     }

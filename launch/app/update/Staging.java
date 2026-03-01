@@ -1,12 +1,14 @@
 package launch.app.update;
 
+import launch.app.config.Config;
 import launch.app.helpers.SimpleProcess;
 import launch.app.helpers.SimpleDownloader;
 import java.io.File;
 import java.io.FileWriter;
 
 public class Staging {
-    
+
+
     public static void main(String[] args) {
         
         // 0 -> App is initialized!

@@ -1,5 +1,5 @@
 import launch.app.config.Config;
-import launch.app.helpers.SimpleProcess;
+import launch.app.helpers.SimpleBuilder;
 import launch.app.watchdog.CurrentKiller;
 import launch.app.watchdog.ManagedProcess;
 import launch.app.watchdog.Watchdog;
@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class Launch {
-    
+
     public static void main(String[] args) {
 
         try {
@@ -54,6 +54,7 @@ public class Launch {
 
         int exitcode = 10;
         String stderr = "";
+        int runtimeDelay = Config.getInt("launch.runtime.delay", 1000);
 
         List<ManagedProcess> processList = new ArrayList<>();
 
@@ -77,273 +78,226 @@ public class Launch {
 
         while (true) {
 
+
             try {
 
-                if (exitcode == 10) {
+                Thread.sleep(runtimeDelay);
 
-                    System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                switch (exitcode) {
 
-                    File current = new File("current");
-
-                    if (!current.isDirectory()) {
-                        
-                        exitcode = 80;
-
-                    } else {
-
-                        exitcode = 280;
-
+                    case 10: {
+                        System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        File current = new File("current");
+                        exitcode = current.isDirectory() ? 280 : 80;
+                        break;
                     }
-                }
 
-                if (exitcode == 280 || exitcode == 281) {
+                    case 280:
+                    case 281: {
+                        System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        watchdog.startAll();
 
-                    System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        // Where launch is controlled by watchdog which is controlled by process also
+                        exitcode = watchdog.mainThreadWaitForProcessExitcode();
+                        System.out.println("[INFO] Exitcode returned back main Launch thread. Ready for any mission (exitcode from process = " + exitcode + ")");
+                        watchdog.stopAll();
+                        break;
+                    }
 
-                    watchdog.startAll();
+                    case 95:
+                    case 96:
+                    case 295:
+                    case 296: {
+                        System.out.println("\n[INFO] "
+                            + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")"
+                            + "\n[ERROR] " + stderr + "\n");
+                        stderr = "";
+                        exitcode = (exitcode == 295 || exitcode == 296) ? 281 : 81;
+                        break;
+                    }
 
-                    exitcode = watchdog.mainThreadWaitForFatalCrash();
-                    
-                    watchdog.stopAll();
+                    case 80:
+                    case 81: {
+                        System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        exitcode = SimpleBuilder.run("launch/App.java", "launch.App", "update");
+                        break;
+                    }
 
-                }
+                    case 99: {
+                        System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        System.out.println("[INFO] Waiting for staging...");
 
-                if (exitcode == 95 || exitcode == 96 || exitcode == 295 || exitcode == 296 || !stderr.isEmpty()) {
+                        File state = new File("launch/app/update/state/update_staging.json");
+                        int stagingTimeout = Config.getInt("update.staging.timeout", 30);
+                        int timeout = 0;
 
-                    System.out.println("\n[INFO] "
-                        + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")"
-                        + "\n[ERROR] " + stderr + "\n");
-                    stderr = "";
-                    if (exitcode == 296 || exitcode == 295) exitcode = 281;
-                    if (exitcode == 95 || exitcode == 96) exitcode = 81;
-                }
-
-                if (exitcode ==  80 || exitcode == 81) {
-
-                    System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
-
-                    exitcode = SimpleProcess.run("java", "launch/App.java", "update");
-                }
-                
-                if (exitcode == 99) {
-
-                    System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
-
-                    System.out.println("[INFO] Waiting for staging...");
-
-                    File state = new File("launch/app/updater/state/update_staging.json");
-
-                    int stagingTimeout = Config.getInt("update.staging.timeout", 30);
-                    int timeout = 0;
-
-                    while (true) {
-
-                        timeout++;
-
-                        if (timeout <= stagingTimeout) {
-
-                            if (state.isFile()) {
-
-                                String content = new String(Files.readAllBytes(state.toPath()));
-
-                                if (content.contains("99")) {
-
-                                    System.out.println("[INFO] Staging prepared! ( " + content + ")");
-
-                                    state.delete();
-
-                                    exitcode = 100;
-
-                                    break;
+                        while (true) {
+                            timeout++;
+                            if (timeout <= stagingTimeout) {
+                                if (state.isFile()) {
+                                    String content = new String(Files.readAllBytes(state.toPath()));
+                                    if (content.contains("99")) {
+                                        System.out.println("[INFO] Staging prepared! ( " + content + ")");
+                                        state.delete();
+                                        exitcode = 100;
+                                        break;
+                                    }
                                 }
+                            } else {
+                                stderr = "timeout waiting for staging";
+                                exitcode = 81;
+                                break;
                             }
-                        } else {
-
-                            stderr = "timeout waiting for staging";
-                            exitcode = 81;
-                            break;
+                            Thread.sleep(1000);
                         }
-                        
-                        Thread.sleep(1000);
+                        break;
                     }
-                }
-                
-                if (exitcode == 100) {
 
-                    System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                    case 100: {
+                        System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        exitcode = 101;
+                        break;
+                    }
 
-                    exitcode = 101;
+                    case 101: {
+                        System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        try {
+                            File[] stagingFolders = new File("staging")
+                                .listFiles(f -> f.isDirectory() && f.getName().startsWith("staging_"));
+                            if (stagingFolders == null) stagingFolders = new File[0];
 
-                }
+                            File stagingLatest = Arrays.stream(stagingFolders)
+                                .max(Comparator.comparing(File::getName))
+                                .orElse(null);
 
-                if (exitcode == 101) {
-
-                    System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
-                    
-                    try {
-
-                        File[] stagingFolders = new File("staging")
-                            .listFiles(
-                                f -> f.isDirectory() && f.getName().startsWith("staging_")
-                            );
-
-                        if (stagingFolders == null) stagingFolders = new File[0];
-
-                        File stagingLatest = Arrays.stream(stagingFolders)
-                            .max(Comparator.comparing(File::getName))
-                            .orElse(null);
-
-                        if (stagingFolders.length == 0 || stagingLatest == null) {
-                            
-                            stderr = "no staging folder was found, trying to relaunch app";
-                            exitcode = 81;
-                        }
-
-                        if (stagingFolders.length > 0 && stagingLatest != null) {
-                            
-                            String timestamp = stagingLatest.getName().substring("staging_".length());
-
-                            File current = new File("current");
-
-                            File backup = new File("backup");
-                            
-                            if (current.isDirectory()) {
-
-                                CurrentKiller.kill();
-
-                                backup.mkdir();
-
-                                File backupTimestamp = new File("backup/backup_" + timestamp);
-
-                                Files.move(current.toPath(), backupTimestamp.toPath());
+                            if (stagingFolders.length == 0 || stagingLatest == null) {
+                                stderr = "no staging folder was found, trying to relaunch app";
+                                exitcode = 81;
                             }
 
-                            exitcode = 102;
+                            if (stagingFolders.length > 0 && stagingLatest != null) {
+                                String timestamp = stagingLatest.getName().substring("staging_".length());
+                                File current = new File("current");
+                                File backup = new File("backup");
+                                if (current.isDirectory()) {
+                                    CurrentKiller.kill();
+                                    backup.mkdir();
+                                    File backupTimestamp = new File("backup/backup_" + timestamp);
+                                    Files.move(current.toPath(), backupTimestamp.toPath());
+                                }
+                                exitcode = 102;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            stderr = e.getMessage();
+                            exitcode = 96;
                         }
-                        
-                    } catch (Exception e) {
+                        break;
+                    }
 
-                        e.printStackTrace();
-                        stderr = e.getMessage();
-                        exitcode = 96;
+                    case 102: {
+                        System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        try {
+                            File[] stagingFolders = new File("staging")
+                                .listFiles(f -> f.isDirectory() && f.getName().startsWith("staging_"));
+                            if (stagingFolders == null) stagingFolders = new File[0];
+
+                            File stagingLatest = Arrays.stream(stagingFolders)
+                                .max(Comparator.comparing(File::getName))
+                                .orElse(null);
+
+                            if (stagingFolders.length == 0 || stagingLatest == null) {
+                                stderr = "no staging folder was found, trying to relaunch app";
+                                exitcode = 81;
+                            }
+
+                            if (stagingFolders.length > 0 && stagingLatest != null) {
+                                File current = new File("current");
+                                Files.move(stagingLatest.toPath(), current.toPath());
+                                exitcode = 103;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            stderr = e.getMessage();
+                            exitcode = 96;
+                        }
+                        break;
+                    }
+
+                    case 103: {
+                        System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        try {
+                            File[] stagingFolders = new File("staging")
+                                .listFiles(f -> f.isDirectory() && f.getName().startsWith("staging_"));
+                            if (stagingFolders == null) stagingFolders = new File[0];
+
+                            File[] backupFolders = new File("backup")
+                                .listFiles(f -> f.isDirectory() && f.getName().startsWith("backup_"));
+                            if (backupFolders == null) backupFolders = new File[0];
+
+                            for (File folder : stagingFolders) {
+                                Files.walk(folder.toPath())
+                                    .sorted(Comparator.reverseOrder())
+                                    .map(Path::toFile)
+                                    .forEach(f -> {
+                                        f.setWritable(true);
+                                        boolean deleted = f.delete();
+                                        if (!deleted) {
+                                            System.out.println("[ERROR] Failed to remove staging folders: " + f.getPath());
+                                        }
+                                    });
+                            }
+
+                            Arrays.sort(backupFolders, Comparator.comparing(File::getName).reversed());
+                            int backupMaxCount = Config.getInt("update.backup.maxCount", 2);
+
+                            for (int j = backupMaxCount; j < backupFolders.length; j++) {
+                                Files.walk(backupFolders[j].toPath())
+                                    .sorted(Comparator.reverseOrder())
+                                    .map(Path::toFile)
+                                    .forEach(f -> {
+                                        f.setWritable(true);
+                                        boolean deleted = f.delete();
+                                        if (!deleted) {
+                                            System.out.println("[ERROR] Failed to remove backup folders: " + f.getPath());
+                                        }
+                                    });
+                            }
+
+                            exitcode = 104;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            stderr = e.getMessage();
+                            exitcode = 96;
+                        }
+                        break;
+                    }
+
+                    case 104: {
+                        System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
+                        exitcode = 10;
+                        break;
+                    }
+
+                    default: {
+                        System.out.println("[ERROR] Unknown exitcode = " + exitcode + ". Let it be 296 for app restarting.");
+
+                        if (!stderr.isEmpty()) {
+                            System.out.println("\n[INFO] "
+                                + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")"
+                                + "\n[ERROR] " + stderr + "\n");
+                            stderr = "";
+                        }
+                        exitcode = 296;
                     }
                 }
-
-                if (exitcode == 102) {
-
-                    System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
-                    
-                    try {
-
-                        File[] stagingFolders = new File("staging")
-                            .listFiles(
-                                f -> f.isDirectory() && f.getName().startsWith("staging_")
-                            );
-
-                        if (stagingFolders == null) stagingFolders = new File[0];
-
-                        File stagingLatest = Arrays.stream(stagingFolders)
-                            .max(Comparator.comparing(File::getName))
-                            .orElse(null);
-
-                        if (stagingFolders.length == 0 || stagingLatest == null) {
-                            
-                            stderr = "no staging folder was found, trying to relaunch app";
-                            exitcode = 81;
-                        }
-
-                        if (stagingFolders.length > 0 && stagingLatest != null) {
-                                
-                            File current = new File("current");
-
-                            Files.move(stagingLatest.toPath(), current.toPath());
-
-                            exitcode = 103;
-                        }
-
-                    } catch (Exception e) {
-
-                        e.printStackTrace();
-                        stderr = e.getMessage();
-                        exitcode = 96;
-                    }
-                } else if (exitcode == 103) {
-
-                    System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
-                    
-                    try {
-                        File[] stagingFolders = new File("staging")
-                            .listFiles(
-                                f -> f.isDirectory() && f.getName().startsWith("staging_")
-                            );
-
-                        if (stagingFolders == null) stagingFolders = new File[0];
-
-                        File[] backupFolders = new File("backup")
-                            .listFiles(
-                                f -> f.isDirectory() && f.getName().startsWith("backup_")
-                            );
-
-                        if (backupFolders == null) backupFolders = new File[0];
-
-                        for (File folder: stagingFolders) {
-                            Files.walk(folder.toPath())
-                                .sorted(Comparator.reverseOrder())
-                                .map(Path::toFile)
-                                .forEach(f -> {
-                                    f.setWritable(true);
-                                    boolean deleted = f.delete();
-                                    if (!deleted) {
-                                        System.out.println("[ERROR] Failed to remove staging folders: " + f.getPath());
-                                    }
-                                });
-                        }
-
-                        Arrays.sort(
-                            backupFolders,
-                            Comparator.comparing(File::getName).reversed()
-                        );
-
-                        int backupMaxCount = Config.getInt("update.backup.maxCount", 2);
-
-                        for (int j = backupMaxCount; j < backupFolders.length; j++) {
-
-                            Files.walk(backupFolders[j].toPath())
-                                .sorted(Comparator.reverseOrder())
-                                .map(Path::toFile)
-                                .forEach(f -> {
-                                    f.setWritable(true);
-                                    boolean deleted = f.delete();
-                                    if (!deleted) {
-                                        System.out.println("[ERROR] Failed to remove backup folders: " + f.getPath());
-                                    }
-                                });
-                            
-                        }
-
-                        exitcode = 104;
-
-                    } catch (Exception e) {
-                        
-                        e.printStackTrace();
-                        stderr = e.getMessage();
-                        exitcode = 96;
-                    }
-                    
-                } else if (exitcode == 104) {
-
-                    System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
-
-                    exitcode = 10;
-                }
-
-                System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
-                
-                Thread.sleep(1000);
 
             } catch (Exception e) {
+
                 System.out.println("[ERROR] App is crashed: " + e.getMessage());
                 e.printStackTrace();
+                exitcode = 296;
+
             }
         }
     }

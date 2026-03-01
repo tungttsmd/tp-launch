@@ -77,9 +77,9 @@ public class Staging {
 
     private static void writeStatus(int exitcode, String stderr) {
 
-        new File("launch/app/updater/state").mkdirs();
+        new File("launch/app/update/state").mkdirs();
 
-        try (FileWriter fw = new FileWriter("launch/app/updater/state/update_staging.json")) {
+        try (FileWriter fw = new FileWriter("launch/app/update/state/update_staging.json")) {
             
             fw.write("{\"exitcode\": " + exitcode + ", \"stderr\": \"" + stderr + "\"}");
 

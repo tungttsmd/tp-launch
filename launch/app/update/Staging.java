@@ -1,4 +1,4 @@
-package launch.app.updater;
+package launch.app.update;
 
 import launch.app.helpers.SimpleProcess;
 import launch.app.helpers.SimpleDownloader;

@@ -1,3 +1,4 @@
+import launch.app.config.Config;
 import launch.app.helpers.SimpleProcess;
 import launch.app.watchdog.CurrentKiller;
 import launch.app.watchdog.ManagedProcess;
@@ -5,8 +6,10 @@ import launch.app.watchdog.Watchdog;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 public class Launch {
     
@@ -51,12 +54,26 @@ public class Launch {
 
         int exitcode = 10;
         String stderr = "";
-        Watchdog watchdog = new Watchdog(
-            new ManagedProcess("libreHwMonitor",             "current\\libreHwMonitor.exe"),
-            new ManagedProcess("client-mqtt-service",        "current\\client-mqtt-service.exe"),
-            new ManagedProcess("client-cloudflared-service", "current\\client-cloudflared-service.exe"),
-            new ManagedProcess("tp-agent",                   "current\\tp-agent.exe")
-        );
+
+        List<ManagedProcess> processList = new ArrayList<>();
+
+        int i = 0;
+
+        while (true) {
+
+            String name = Config.get("processes." + i + ".name", null);
+
+            if (name == null) break;
+
+            String cmd = Config.get("processes." + i + ".cmd", "");
+
+            processList.add(new ManagedProcess(name, cmd));
+
+            i++;
+
+        }
+
+        Watchdog watchdog = new Watchdog(processList.toArray(new ManagedProcess[0]));
 
         while (true) {
 
@@ -85,11 +102,10 @@ public class Launch {
 
                     watchdog.startAll();
 
-                    stderr = watchdog.waitForFatal();
-
+                    exitcode = watchdog.mainThreadWaitForFatalCrash();
+                    
                     watchdog.stopAll();
 
-                    exitcode = 296;
                 }
 
                 if (exitcode == 95 || exitcode == 96 || exitcode == 295 || exitcode == 296 || !stderr.isEmpty()) {
@@ -98,8 +114,8 @@ public class Launch {
                         + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")"
                         + "\n[ERROR] " + stderr + "\n");
                     stderr = "";
-                    
-                    exitcode = 81;
+                    if (exitcode == 296 || exitcode == 295) exitcode = 281;
+                    if (exitcode == 95 || exitcode == 96) exitcode = 81;
                 }
 
                 if (exitcode ==  80 || exitcode == 81) {
@@ -117,13 +133,14 @@ public class Launch {
 
                     File state = new File("launch/app/updater/state/update_staging.json");
 
+                    int stagingTimeout = Config.getInt("update.staging.timeout", 30);
                     int timeout = 0;
 
                     while (true) {
 
                         timeout++;
 
-                        if (timeout <= 30) {
+                        if (timeout <= stagingTimeout) {
 
                             if (state.isFile()) {
 
@@ -250,9 +267,7 @@ public class Launch {
                         stderr = e.getMessage();
                         exitcode = 96;
                     }
-                }
-
-                if (exitcode == 103) {
+                } else if (exitcode == 103) {
 
                     System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
                     
@@ -289,8 +304,11 @@ public class Launch {
                             Comparator.comparing(File::getName).reversed()
                         );
 
-                        for (int i = 2; i < backupFolders.length; i++) {
-                            Files.walk(backupFolders[i].toPath())
+                        int backupMaxCount = Config.getInt("update.backup.maxCount", 2);
+
+                        for (int j = backupMaxCount; j < backupFolders.length; j++) {
+
+                            Files.walk(backupFolders[j].toPath())
                                 .sorted(Comparator.reverseOrder())
                                 .map(Path::toFile)
                                 .forEach(f -> {
@@ -300,6 +318,7 @@ public class Launch {
                                         System.out.println("[ERROR] Failed to remove backup folders: " + f.getPath());
                                     }
                                 });
+                            
                         }
 
                         exitcode = 104;
@@ -310,9 +329,8 @@ public class Launch {
                         stderr = e.getMessage();
                         exitcode = 96;
                     }
-                }
-
-                if (exitcode == 104) {
+                    
+                } else if (exitcode == 104) {
 
                     System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
 

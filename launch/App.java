@@ -1,15 +1,23 @@
 package launch;
 
+import launch.app.config.Config;
 import launch.app.helpers.SimpleProcess;
 
 public class App {
     
     public static void main(String[] args)  {
 
+        String repo = Config.get("update.repo.url", "");
+
+        if (repo.isEmpty()) {
+            System.out.println("[ERROR] Update repo url cannot be empty (please check update.repo.url)!");
+            return;
+        }
+
         System.out.println("[INFO] App is running...!");
         
         if (args.length > 0 && args[0].equals("update")) {
-            staging("https://github.com/tungttsmd/tp-cloudflared-client-service/archive/refs/heads/dev.zip");
+            staging(repo);
         }
 
         if (args.length <= 0 || args[0].equals("help")) {
@@ -62,7 +70,7 @@ public class App {
     public static void stagingDownload(String repo) throws Exception {
 
         // cmd /k for debug Staging.java
-        SimpleProcess.run("cmd", "/c", "start", "cmd", "/c", "java", "launch/app/updater/Staging.java", repo);
+        SimpleProcess.run("cmd", "/c", "start", "cmd", "/c", "java", "launch/app/update/Staging.java", repo);
 
         System.exit(99);
     }

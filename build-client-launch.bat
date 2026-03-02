@@ -16,7 +16,7 @@ set "OUT_DIR=out"
 set "TARGET_DIR=target"
 set "DIST_DIR=dist"
 set "JAR_FILE=%APP_NAME%.jar"
-set "DEPLOY_DIR=%ROOT_DIR%tp-net-node-launch"
+set "DEPLOY_DIR=%ROOT_DIR%tp-net-client-launch"
 
 echo.
 echo %CYAN%===============================================%RESET%
@@ -90,7 +90,7 @@ if errorlevel 1 (
     echo %RED%[FAILED]%RESET% Deploy that bai!
     pause & exit /b 1
 )
-echo %GREEN%[OK]%RESET% Deployed to: tp-net-node-launch\
+echo %GREEN%[OK]%RESET% Deployed to: tp-net-client-launch\
 
 rmdir /s /q %OUT_DIR%
 rmdir /s /q %TARGET_DIR%
@@ -102,7 +102,7 @@ echo %GREEN%===============================================%RESET%
 echo %GREEN%  BUILD HOAN THANH!%RESET%
 echo %GREEN%===============================================%RESET%
 echo.
-echo %CYAN%[INFO]%RESET% Output: tp-net-node-launch\%APP_NAME%.exe
+echo %CYAN%[INFO]%RESET% Output: tp-net-client-launch\%APP_NAME%.exe
 echo.
 
 pause

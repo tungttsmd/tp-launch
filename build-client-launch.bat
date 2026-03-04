@@ -24,14 +24,14 @@ echo %CYAN%  BUILD: %APP_NAME%%RESET%
 echo %CYAN%===============================================%RESET%
 echo.
 
-echo %CYAN%[INFO]%RESET% [1/6] Cleaning previous build...
+echo %CYAN%[INFO]%RESET% [1/7] Cleaning previous build...
 if exist %OUT_DIR%    rmdir /s /q %OUT_DIR%
 if exist %TARGET_DIR% rmdir /s /q %TARGET_DIR%
 if exist %DIST_DIR%   rmdir /s /q %DIST_DIR%
 echo %GREEN%[OK]%RESET% Cleaned.
 
 echo.
-echo %CYAN%[INFO]%RESET% [2/6] Compiling Java sources...
+echo %CYAN%[INFO]%RESET% [2/7] Compiling Java sources...
 mkdir %OUT_DIR%
 mkdir %OUT_DIR%\_src
 copy /y launch.java %OUT_DIR%\_src\Launch.java > nul
@@ -53,7 +53,7 @@ if errorlevel 1 (
 echo %GREEN%[OK]%RESET% Compilation thanh cong.
 
 echo.
-echo %CYAN%[INFO]%RESET% [3/6] Packaging JAR...
+echo %CYAN%[INFO]%RESET% [3/7] Packaging JAR...
 mkdir %TARGET_DIR%
 jar --create --file %TARGET_DIR%\%JAR_FILE% --main-class %MAIN_CLASS% -C %OUT_DIR% .
 if errorlevel 1 (
@@ -63,7 +63,7 @@ if errorlevel 1 (
 echo %GREEN%[OK]%RESET% JAR: %TARGET_DIR%\%JAR_FILE%
 
 echo.
-echo %CYAN%[INFO]%RESET% [4/6] jpackage app-image...
+echo %CYAN%[INFO]%RESET% [4/7] jpackage app-image...
 jpackage ^
   --type app-image ^
   --name %APP_NAME% ^
@@ -78,7 +78,7 @@ if errorlevel 1 (
 echo %GREEN%[OK]%RESET% App image: %DIST_DIR%\%APP_NAME%\
 
 echo.
-echo %CYAN%[INFO]%RESET% [5/6] Copy java.exe vao runtime\bin\...
+echo %CYAN%[INFO]%RESET% [5/7] Copy java.exe vao runtime\bin\...
 for /f "tokens=*" %%j in ('where java') do set "JAVA_EXE=%%j" & goto :found_java
 :found_java
 copy /y "%JAVA_EXE%" %DIST_DIR%\%APP_NAME%\runtime\bin\java.exe > nul
@@ -89,12 +89,12 @@ if errorlevel 1 (
 echo %GREEN%[OK]%RESET% java.exe da copy vao runtime\bin\
 
 echo.
-echo %CYAN%[INFO]%RESET% [5b/6] Copy launch.properties...
+echo %CYAN%[INFO]%RESET% [6/7] Copy launch.properties...
 copy /y launch.properties %DIST_DIR%\%APP_NAME%\launch.properties > nul
 echo %GREEN%[OK]%RESET% launch.properties sao chep thanh cong.
 
 echo.
-echo %CYAN%[INFO]%RESET% [6/6] Deploy va don dep...
+echo %CYAN%[INFO]%RESET% [7/7] Deploy va don dep...
 if exist "%DEPLOY_DIR%" rmdir /s /q "%DEPLOY_DIR%"
 xcopy "%DIST_DIR%\%APP_NAME%" "%DEPLOY_DIR%\" /e /i /q
 if errorlevel 1 (

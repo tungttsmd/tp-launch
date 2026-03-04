@@ -146,6 +146,7 @@ public class Launch {
                             } else {
                                 stderr = "timeout waiting for staging";
                                 exitcode = 81;
+                                CurrentKiller.kill();
                                 break;
                             }
                             Thread.sleep(1000);

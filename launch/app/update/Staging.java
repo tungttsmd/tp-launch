@@ -5,11 +5,14 @@ import launch.app.helpers.SimpleProcess;
 import launch.app.helpers.SimpleDownloader;
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
 
 public class Staging {
 
 
     public static void main(String[] args) {
+
+        writeStagingPid();
         
         // 0 -> App is initialized!
         // ...
@@ -89,6 +92,19 @@ public class Staging {
 
             exitcode = 796;
             e.printStackTrace();
+        }
+    }
+
+    private static void writeStagingPid() {
+        try {
+            File pidsDir = new File("launch/app/watchdog/pids");
+            pidsDir.mkdirs();
+            Files.write(
+                new File(pidsDir, "staging.pid").toPath(),
+                String.valueOf(ProcessHandle.current().pid()).getBytes()
+            );
+        } catch (Exception e) {
+            System.out.println("[WARN] Failed to write staging.pid: " + e.getMessage());
         }
     }
 

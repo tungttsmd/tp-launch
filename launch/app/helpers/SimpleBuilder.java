@@ -52,13 +52,17 @@ public class SimpleBuilder {
         return SimpleProcess.run(buildCmd(sourceFile, className, args));
     }
 
-    // Non-blocking new window — dùng cho Staging.java
+    // Non-blocking (staging update có xài waitFor nên cảm giác tưởng bị block) new window — dùng cho Staging.java
     public static void runInNewWindow(String sourceFile, String className, boolean isKeepConsole, String... args) throws Exception {
 
-        String keepType = (isKeepConsole) ? "/k" : "/c";
+        if (isKeepConsole) {
 
-        List<String> cmd = new ArrayList<>(Arrays.asList("cmd", "/c", "start", "cmd", keepType));
-        cmd.addAll(Arrays.asList(buildCmd(sourceFile, className, args)));
-        SimpleProcess.run(cmd.toArray(new String[0]));
+            List<String> cmd = new ArrayList<>(Arrays.asList("cmd", "/c", "start", "", "cmd", "/k"));
+            cmd.addAll(Arrays.asList(buildCmd(sourceFile, className, args)));
+            SimpleProcess.run(cmd.toArray(new String[0]));
+
+        } else {
+            SimpleProcess.start(buildCmd(sourceFile, className, args));
+        }
     }
 }

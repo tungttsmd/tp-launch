@@ -78,7 +78,18 @@ if errorlevel 1 (
 echo %GREEN%[OK]%RESET% App image: %DIST_DIR%\%APP_NAME%\
 
 echo.
-echo %CYAN%[INFO]%RESET% [5/6] Copy launch.properties...
+echo %CYAN%[INFO]%RESET% [5/6] Copy java.exe vao runtime\bin\...
+for /f "tokens=*" %%j in ('where java') do set "JAVA_EXE=%%j" & goto :found_java
+:found_java
+copy /y "%JAVA_EXE%" %DIST_DIR%\%APP_NAME%\runtime\bin\java.exe > nul
+if errorlevel 1 (
+    echo %RED%[FAILED]%RESET% Copy java.exe that bai!
+    pause & exit /b 1
+)
+echo %GREEN%[OK]%RESET% java.exe da copy vao runtime\bin\
+
+echo.
+echo %CYAN%[INFO]%RESET% [5b/6] Copy launch.properties...
 copy /y launch.properties %DIST_DIR%\%APP_NAME%\launch.properties > nul
 echo %GREEN%[OK]%RESET% launch.properties sao chep thanh cong.
 

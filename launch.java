@@ -124,6 +124,11 @@ public class Launch {
                     }
 
                     case 99: {
+                        System.out.println("[INFO] Stop all processes for the updating");
+                        watchdog.stopAll();
+                        CurrentKiller.kill();
+                        System.out.println("[INFO] All processes are stopped");
+
                         System.out.println("[INFO] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
                         System.out.println("[INFO] Waiting for staging...");
 

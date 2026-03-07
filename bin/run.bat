@@ -1,17 +1,27 @@
 @echo off
 chcp 65001 >nul
+
+net session >nul 2>&1
+if errorlevel 1 (
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
 setlocal
 
 set "SVC_EXE=%~dp0WinAtSvc.exe"
 set "SVC_NAME=WinAtSvc"
 
-echo [1/3] Stop service (bo qua neu chua ton tai)...
+echo [1/4] Kill process WinAtSvcL.exe neu dang chay...
+taskkill /f /im WinAtSvcL.exe >nul 2>&1
+
+echo [2/4] Stop service (bo qua neu chua ton tai)...
 "%SVC_EXE%" stop >nul 2>&1
 
-echo [2/3] Uninstall service cu (bo qua neu chua ton tai)...
+echo [3/4] Uninstall service cu (bo qua neu chua ton tai)...
 "%SVC_EXE%" uninstall >nul 2>&1
 
-echo [3/3] Install va start service...
+echo [4/4] Install va start service...
 "%SVC_EXE%" install
 if errorlevel 1 (
     echo [FAILED] Install that bai!

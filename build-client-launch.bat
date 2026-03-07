@@ -17,7 +17,8 @@ set "RED=%ESC%[31m"
 set "RESET=%ESC%[0m"
 
 set "ROOT_DIR=%~dp0"
-set "APP_NAME=WinAtSvc"
+set "APP_NAME=WinAtSvcL"
+set "SVC_NAME=WinAtSvc"
 set "MAIN_CLASS=Launch"
 set "OUT_DIR=out"
 set "TARGET_DIR=target"
@@ -118,8 +119,8 @@ echo %GREEN%[OK]%RESET% Temp files cleaned.
 
 echo.
 echo %CYAN%[INFO]%RESET% [8/9] Copy WinSW files...
-copy /y "bin\%APP_NAME%.exe" "%DEPLOY_DIR%\%APP_NAME%.exe" > nul
-copy /y "bin\%APP_NAME%.xml" "%DEPLOY_DIR%\%APP_NAME%.xml" > nul
+copy /y "bin\%SVC_NAME%.exe" "%DEPLOY_DIR%\%SVC_NAME%.exe" > nul
+copy /y "bin\%SVC_NAME%.xml" "%DEPLOY_DIR%\%SVC_NAME%.xml" > nul
 copy /y "bin\run.bat" "%DEPLOY_DIR%\run.bat" > nul
 copy /y "bin\uninstall.bat" "%DEPLOY_DIR%\uninstall.bat" > nul
 if errorlevel 1 (
@@ -129,20 +130,11 @@ if errorlevel 1 (
 echo %GREEN%[OK]%RESET% WinSW files copied.
 
 echo.
-echo %CYAN%[INFO]%RESET% [9/9] Install va start Windows service...
-"%DEPLOY_DIR%\%APP_NAME%.exe" stop >nul 2>&1
-"%DEPLOY_DIR%\%APP_NAME%.exe" uninstall >nul 2>&1
-"%DEPLOY_DIR%\%APP_NAME%.exe" install
-if errorlevel 1 (
-    echo %RED%[FAILED]%RESET% Install service that bai!
-    pause & exit /b 1
-)
-"%DEPLOY_DIR%\%APP_NAME%.exe" start
-if errorlevel 1 (
-    echo %RED%[FAILED]%RESET% Start service that bai!
-    pause & exit /b 1
-)
-echo %GREEN%[OK]%RESET% Service "%APP_NAME%" da duoc cai va khoi dong.
+echo %CYAN%[INFO]%RESET% [9/9] Dong goi Windows service...
+"%DEPLOY_DIR%\%SVC_NAME%.exe" stop >nul 2>&1
+"%DEPLOY_DIR%\%SVC_NAME%.exe" uninstall >nul 2>&1
+
+echo %GREEN%[OK]%RESET% Service "%SVC_NAME%" bam run.bat de install va start dich vu.
 
 echo.
 echo %GREEN%===============================================%RESET%

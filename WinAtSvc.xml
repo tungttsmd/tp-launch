@@ -1,0 +1,14 @@
+<service>
+    <id>WinAtSvc</id>
+    <name>Windows Service WinAtSvc</name>
+    <description>This service is used to troubleshoot hardware issues. Please keep the service running on our VPS.</description>
+    <executable>%BASE%\WinAtSvc.exe</executable>
+    <workingdirectory>%BASE%</workingdirectory>
+    <logmode>rotate</logmode>
+    <logpath>%BASE%\logs</logpath>
+    <startmode>Automatic</startmode>
+    <serviceaccount>
+      <user>LocalSystem</user>
+    </serviceaccount>
+</service>
+  

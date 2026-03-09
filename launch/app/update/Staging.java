@@ -1,8 +1,7 @@
 package launch.app.update;
 
 import launch.app.config.Config;
-import launch.app.helpers.SimpleProcess;
-import launch.app.helpers.SimpleDownloader;
+import launch.app.helpers.SimpleGit;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Files;
@@ -34,6 +33,8 @@ public class Staging {
             System.out.println("[ERROR] " + exitcodeExplanation(exitcode) + " (exitcode: " + exitcode + ")");
         }
 
+        new File("launch/app/watchdog/pids/staging.pid").delete();
+
         // rename staging -> current
         // start app
     }
@@ -54,9 +55,10 @@ public class Staging {
             new File("staging").mkdirs();
 
             System.out.println("[INFO] Cloning update repo...");
-            
-            int exitcode = SimpleDownloader.downloadAndExtract(repo, "staging/" + stagingDir, "download.zip");
-            
+
+            String branch = Config.get("update.repo.branch", "main");
+            int exitcode = SimpleGit.cloneOrFallback(repo, branch, "staging/" + stagingDir);
+
             if (exitcode != 0) {
 
                 writeStatus(exitcode, "Staging failed to clone update repo!");

@@ -2,7 +2,7 @@ package launch;
 
 import launch.app.config.Config;
 import launch.app.helpers.SimpleBuilder;
-import launch.app.helpers.SimpleProcess;
+import launch.app.helpers.SimpleGit;
 
 public class App {
     
@@ -18,6 +18,9 @@ public class App {
         System.out.println("[INFO] App is running...!");
         
         if (args.length > 0 && args[0].equals("update")) {
+            if (!SimpleGit.isInstalled()) {
+                System.out.println("[WARN] Git is not installed, will fallback to zip download.");
+            }
             staging(repo);
         }
 

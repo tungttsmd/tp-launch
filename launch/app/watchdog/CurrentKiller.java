@@ -36,7 +36,7 @@ public class CurrentKiller {
 
         if (pidsDir.isDirectory()) {
 
-            File[] pidFiles = pidsDir.listFiles(f -> f.getName().endsWith(".pid"));
+            File[] pidFiles = pidsDir.listFiles(f -> f.getName().endsWith(".pid") && !f.getName().equals("staging.pid"));
 
             if (pidFiles != null) {
 

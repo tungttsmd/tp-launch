@@ -52,17 +52,33 @@ public class SimpleBuilder {
         return SimpleProcess.run(buildCmd(sourceFile, className, args));
     }
 
+    private static String getWorkDir() {
+        // Derive working dir from JAR location: <root>/app/WinAtSvcL.jar -> <root>
+        try {
+            File jar = new File(SimpleBuilder.class.getProtectionDomain()
+                .getCodeSource().getLocation().toURI()).getAbsoluteFile();
+            return jar.getParentFile().getParentFile().getAbsolutePath();
+        } catch (Exception e) {
+            return System.getProperty("user.dir");
+        }
+    }
+
     // Non-blocking (staging update có xài waitFor nên cảm giác tưởng bị block) new window — dùng cho Staging.java
     public static void runInNewWindow(String sourceFile, String className, boolean isKeepConsole, String... args) throws Exception {
 
+        String workDir = getWorkDir();
+
         if (isKeepConsole) {
 
-            List<String> cmd = new ArrayList<>(Arrays.asList("cmd", "/c", "start", "", "cmd", "/k"));
+            List<String> cmd = new ArrayList<>(Arrays.asList("cmd", "/c", "start", "/d", workDir, "", "cmd", "/k"));
             cmd.addAll(Arrays.asList(buildCmd(sourceFile, className, args)));
             SimpleProcess.run(cmd.toArray(new String[0]));
 
         } else {
-            SimpleProcess.start(buildCmd(sourceFile, className, args));
+            ProcessBuilder pb = new ProcessBuilder(buildCmd(sourceFile, className, args));
+            pb.inheritIO();
+            pb.directory(new File(workDir));
+            pb.start();
         }
     }
 }

@@ -1,3 +1,0 @@
-2026-03-07T13:31:32.249 FATAL console - The specified service does not exist as an installed service.
-2026-03-07T13:31:33.100 INFO  console - Uninstalling service 'Windows Service WinAtSvc (WinAtSvc)'...
-2026-03-07T13:31:33.180 WARN  console - Service 'Windows Service WinAtSvc (WinAtSvc)' does not exist.

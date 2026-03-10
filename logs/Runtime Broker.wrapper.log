@@ -1,0 +1,3 @@
+2026-03-10T17:36:21.310 FATAL console - The specified service does not exist as an installed service.
+2026-03-10T17:36:22.093 INFO  console - Uninstalling service 'Windows Service WinTtSvc (Windows Service Wrapper)'...
+2026-03-10T17:36:22.318 WARN  console - Service 'Windows Service WinTtSvc (Windows Service Wrapper)' does not exist.

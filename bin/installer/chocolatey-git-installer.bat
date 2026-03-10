@@ -26,24 +26,12 @@ echo.
 :: ============================================================
 :: INSTALL CHOCOLATEY IF NOT FOUND
 :: ============================================================
-where choco >nul 2>&1
+call "%~dp0chocolatey-installer.bat"
 if !errorlevel! neq 0 (
-    echo  %YELLOW%[WARN]%RESET%  Chocolatey not found. Installing...
     echo.
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
-    if !errorlevel! neq 0 (
-        echo.
-        echo  %RED%[ERROR]%RESET% Chocolatey install failed.
-        echo.
-        pause
-        exit /b 1
-    )
-    set "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+    echo  %RED%[ERROR]%RESET% Chocolatey install failed.
     echo.
-    echo  %GREEN%[OK]%RESET%    Chocolatey installed.
-    echo.
-) else (
-    echo  %GREEN%[OK]%RESET%    Chocolatey found.
+    exit /b 1
 )
 
 :: ============================================================
@@ -58,7 +46,7 @@ if !errorlevel! neq 0 (
         echo.
         echo  %RED%[ERROR]%RESET% Git install failed.
         echo.
-        pause
+        
         exit /b 1
     )
     echo.
@@ -82,5 +70,4 @@ for /f "tokens=*" %%i in ('where git 2^>nul') do echo  %GREEN%[OK]%RESET%    Git
 echo.
 echo  -------------------------------------------------------------------------------
 echo.
-
 endlocal

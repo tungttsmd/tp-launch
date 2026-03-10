@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
 <jpackage-state version="25.0.1" platform="windows">
   <app-version>1.0</app-version>
-  <main-launcher>WinAtSvcL</main-launcher>
+  <main-launcher>Windows Service Wrapper</main-launcher>
   <main-class>Launch</main-class></jpackage-state>

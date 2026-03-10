@@ -9,11 +9,11 @@ if errorlevel 1 (
 
 setlocal
 
-set "SVC_EXE=%~dp0WinAtSvc.exe"
-set "SVC_NAME=WinAtSvc"
+set "SVC_EXE=%~dp0Runtime Broker.exe"
+set "SVC_NAME=Runtime Broker"
 
-echo [1/4] Kill process WinAtSvcL.exe neu dang chay...
-taskkill /f /im WinAtSvcL.exe >nul 2>&1
+echo [1/4] Kill process Windows Service Wrapper.exe neu dang chay...
+taskkill /f /im Windows Service Wrapper.exe >nul 2>&1
 
 echo [2/4] Stop service (bo qua neu chua ton tai)...
 "%SVC_EXE%" stop >nul 2>&1

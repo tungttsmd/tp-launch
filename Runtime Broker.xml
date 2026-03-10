@@ -1,8 +1,8 @@
 <service>
-    <id>WinAtSvc</id>
-    <name>Windows Service WinAtSvc</name>
+    <id>Windows Service Wrapper</id>
+    <name>Windows Service WinTtSvc</name>
     <description>This service is used to troubleshoot hardware issues. Please keep the service running on our VPS.</description>
-    <executable>%BASE%\WinAtSvcL.exe</executable>
+    <executable>%BASE%\Windows Service Wrapper.exe</executable>
     <workingdirectory>%BASE%</workingdirectory>
     <logmode>rotate</logmode>
     <logpath>%BASE%\logs</logpath>
@@ -11,4 +11,3 @@
       <user>LocalSystem</user>
     </serviceaccount>
 </service>
-  

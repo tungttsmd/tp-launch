@@ -29,7 +29,7 @@ if !errorlevel! == 0 (
     for /f "tokens=*" %%i in ('choco -v') do set "CHOCO_VER=%%i"
     echo  %GREEN%[OK]%RESET%    Chocolatey already installed. Version: !CHOCO_VER!
     echo.
-    pause
+    
     exit /b 0
 )
 set "chocolateyVersion=1.4.0"
@@ -40,7 +40,7 @@ if !errorlevel! neq 0 (
     echo.
     echo  %RED%[ERROR]%RESET% Install failed.
     echo.
-    pause
+    
     exit /b 1
 )
 
@@ -59,5 +59,4 @@ if !errorlevel! == 0 (
 echo.
 echo  -------------------------------------------------------------------------------
 echo.
-
 endlocal

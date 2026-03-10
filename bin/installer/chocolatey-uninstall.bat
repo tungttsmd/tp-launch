@@ -27,7 +27,7 @@ where choco >nul 2>&1
 if !errorlevel! neq 0 (
     echo  %CYAN%[INFO]%RESET%  Chocolatey is not installed.
     echo.
-    pause
+    
     exit /b 0
 )
 
@@ -38,7 +38,7 @@ if !errorlevel! neq 0 (
     echo.
     echo  %RED%[ERROR]%RESET% Uninstall failed.
     echo.
-    pause
+    
     exit /b 1
 )
 

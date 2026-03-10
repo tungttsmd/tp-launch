@@ -13,7 +13,7 @@ public class SimpleGit {
     };
 
     // Read fresh PATH from Windows registry (system + user), bypass stale JVM environment
-    private static String getFreshPath() {
+    public static String getFreshPath() {
         try {
             StringBuilder sb = new StringBuilder();
             String[] keys = {

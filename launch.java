@@ -315,10 +315,10 @@ public class Launch {
 
     private static boolean isCommandAvailable(String command) {
         try {
-            Process p = new ProcessBuilder("where", command)
-                .redirectErrorStream(true)
-                .start();
-            return p.waitFor() == 0;
+            ProcessBuilder pb = new ProcessBuilder("where", command)
+                .redirectErrorStream(true);
+            pb.environment().put("PATH", SimpleGit.getFreshPath());
+            return pb.start().waitFor() == 0;
         } catch (Exception e) {
             return false;
         }

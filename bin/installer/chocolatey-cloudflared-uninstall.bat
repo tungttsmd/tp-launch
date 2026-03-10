@@ -29,7 +29,7 @@ where choco >nul 2>&1
 if !errorlevel! neq 0 (
     echo  %RED%[ERROR]%RESET% Chocolatey not found. Cannot uninstall.
     echo.
-    pause
+    
     exit /b 1
 ) else (
     echo  %GREEN%[OK]%RESET%    Chocolatey found.
@@ -42,7 +42,7 @@ where cloudflared >nul 2>&1
 if !errorlevel! neq 0 (
     echo  %CYAN%[INFO]%RESET%  Cloudflared is not installed.
     echo.
-    pause
+    
     exit /b 0
 )
 
@@ -53,7 +53,7 @@ if !errorlevel! neq 0 (
     echo.
     echo  %RED%[ERROR]%RESET% Uninstall failed.
     echo.
-    pause
+    
     exit /b 1
 )
 
